@@ -1,65 +1,59 @@
 ﻿using GalaSoft.MvvmLight;
-using Capturer.Model;
+using GalaSoft.MvvmLight.Command;
+using Library;
+using System.Collections.ObjectModel;
+using System.Timers;
+using System;
 
 namespace Capturer.ViewModel
 {
-    /// <summary>
-    /// This class contains properties that the main View can data bind to.
-    /// <para>
-    /// See http://www.mvvmlight.net
-    /// </para>
-    /// </summary>
+    
     public class MainViewModel : ViewModelBase
     {
-        private readonly IDataService _dataService;
-
-        /// <summary>
-        /// The <see cref="WelcomeTitle" /> property's name.
-        /// </summary>
-        public const string WelcomeTitlePropertyName = "WelcomeTitle";
-
-        private string _welcomeTitle = string.Empty;
-
-        /// <summary>
-        /// Gets the WelcomeTitle property.
-        /// Changes to that property's value raise the PropertyChanged event. 
-        /// </summary>
-        public string WelcomeTitle
+        private ObservableCollection<Objects.Log> logsList;
+        public ObservableCollection<Objects.Log> LogsList
         {
-            get
-            {
-                return _welcomeTitle;
-            }
+            get { return logsList; }
             set
             {
-                Set(ref _welcomeTitle, value);
+                logsList = value;
+                RaisePropertyChanged("LogsList");
             }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the MainViewModel class.
-        /// </summary>
-        public MainViewModel(IDataService dataService)
-        {
-            _dataService = dataService;
-            _dataService.GetData(
-                (item, error) =>
-                {
-                    if (error != null)
-                    {
-                        // Report error here
-                        return;
-                    }
+        public RelayCommand NewCommand { get; set; }
 
-                    WelcomeTitle = item.Title;
-                });
+
+        void InitiateCommands()
+        {
+            NewCommand = new RelayCommand(new_Task, canCreateNewTask);
         }
 
-        ////public override void Cleanup()
-        ////{
-        ////    // Clean up if needed
+        private bool canCreateNewTask()
+        {
+            return true;
+        }
 
-        ////    base.Cleanup();
-        ////}
+        private void new_Task()
+        {
+            Objects.Task t = new Objects.Task();
+            Objects.Log log = new Objects.Log();
+            log.text = t.GetDuration();
+            log.type = 1;
+            LogsList.Add(log);
+        }
+
+        void load_data()
+        {
+
+        }
+
+        public MainViewModel()
+        {
+            InitiateCommands();
+            logsList = new ObservableCollection<Objects.Log>();            
+        }
+
+        
     }
 }
