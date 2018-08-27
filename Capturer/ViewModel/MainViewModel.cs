@@ -4,6 +4,8 @@ using Library;
 using System.Collections.ObjectModel;
 using System.Timers;
 using System;
+using System.Xml;
+using System.IO;
 
 namespace Capturer.ViewModel
 {
@@ -45,7 +47,8 @@ namespace Capturer.ViewModel
 
         void load_data()
         {
-
+            XmlDocument xmlDoc = new XmlDocument();
+            if (File.Exists(Directory.GetCurrentDirectory() + "config.xml")) xmlDoc.LoadXml(Directory.GetCurrentDirectory() + "config.xml");
         }
 
         public MainViewModel()

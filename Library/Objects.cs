@@ -13,8 +13,9 @@ namespace Library
             private string _sourceIP;
             private string _destinationPath;
             private int days;
-            private TimeSpan duration;
-            
+            private TimeSpan duration
+
+
             public Task(string sourceIP, string destinationPath, int days)
             {
                 _sourceIP = sourceIP;
@@ -30,10 +31,12 @@ namespace Library
             private TimeSpan CalculateTimeToFullHour()
             {
                 DateTime dt_now = DateTime.Now;
-
                 int nextHour = 0;
+
                 if (dt_now.Hour < 23) nextHour = dt_now.Hour + 1;          
                 DateTime dt_next = new DateTime(dt_now.Year, dt_now.Month, dt_now.Day, nextHour, 0, 0);
+                if (nextHour == 0) dt_next.AddDays(1);
+
                 TimeSpan span = dt_next - dt_now;
 
                 if (span.TotalMilliseconds<0)
@@ -46,6 +49,7 @@ namespace Library
 
             public string GetDuration()
             {
+                duration = CalculateTimeToFullHour();
                 return duration.ToString();
             }
         }
