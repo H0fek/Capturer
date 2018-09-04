@@ -6,57 +6,145 @@ using System.Timers;
 using System;
 using System.Xml;
 using System.IO;
+using System.Windows.Forms;
+using System.Linq;
+using System.ServiceProcess;
 
 namespace Capturer.ViewModel
-{
-    
+{    
     public class MainViewModel : ViewModelBase
     {
-        private ObservableCollection<Objects.Log> logsList;
-        public ObservableCollection<Objects.Log> LogsList
+        #region INotifyVariables
+
+        public ObservableCollection<Types.Task> Tasks
         {
-            get { return logsList; }
+            get { return Tasker.Tasks.ToObservableCollection(); }
+        }
+
+        public ObservableCollection<Types.Log> LogsList
+        {
+            get { return Logger.Logs.ToObservableCollection(); }
+        }
+
+        private string destPath;
+        public string DestPath
+        {
+            get { return destPath; }
             set
             {
-                logsList = value;
-                RaisePropertyChanged("LogsList");
+                destPath = value;
+                NewCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("DestPath");
             }
         }
 
+        private string ip;
+        public string IP
+        {
+            get { return ip; }
+            set
+            {
+                ip = value;
+                NewCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("IP");
+            }
+        }
+
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                name = value;
+                NewCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("Name");
+            }
+        }
+
+        private int days;
+        public int Days
+        {
+            get { return days; }
+            set
+            {
+                days = value;
+                NewCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("Days");
+            }
+        }
+
+        private int type;
+        public int Type
+        {
+            get { return type; }
+            set
+            {
+                type = value;
+                NewCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("Type");
+            }
+        }
+        #endregion
+
+        #region commands
+
         public RelayCommand NewCommand { get; set; }
+        public RelayCommand BrowseCommand { get; set; }
 
-
-        void InitiateCommands()
+        void CreateCommands()
         {
             NewCommand = new RelayCommand(new_Task, canCreateNewTask);
+            BrowseCommand = new RelayCommand(browse);
+        }
+
+        private void browse()
+        {
+            FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                DestPath = folderBrowserDialog1.SelectedPath;
+            }
         }
 
         private bool canCreateNewTask()
         {
-            return true;
+            if ((name != null) && (destPath != null) && (ip != null))
+                if ((name.Length > 0) && (type != -1) && (destPath.Length > 0) && (ip.Length > 0) && (days >= 0)) return true;
+            return false;
         }
 
         private void new_Task()
         {
-            Objects.Task t = new Objects.Task();
-            Objects.Log log = new Objects.Log();
-            log.text = t.GetDuration();
-            log.type = 1;
-            LogsList.Add(log);
+            Types.Task t = new Types.Task();
+            t.name = name;
+            t.type = type;
+            t._destinationPath = destPath;
+            t._sourceIP = ip;
+            Tasks.Add(t);
+
+            Config.save(Tasks.ToList());
+            ServiceCtrl.restartService();
         }
 
-        void load_data()
+        #endregion
+
+        public void SynchronizeView()
         {
-            XmlDocument xmlDoc = new XmlDocument();
-            if (File.Exists(Directory.GetCurrentDirectory() + "config.xml")) xmlDoc.LoadXml(Directory.GetCurrentDirectory() + "config.xml");
+            RaisePropertyChanged("Tasks");
+            RaisePropertyChanged("LogsList");
+            RaisePropertyChanged("Type");
+            RaisePropertyChanged("Days");
+            RaisePropertyChanged("Name");
+            RaisePropertyChanged("IP");
+            RaisePropertyChanged("DestPath");
         }
 
         public MainViewModel()
         {
-            InitiateCommands();
-            logsList = new ObservableCollection<Objects.Log>();            
+            CreateCommands();
+            Tasker.Tasks = Config.load();
+            SynchronizeView();
         }
-
-        
     }
 }

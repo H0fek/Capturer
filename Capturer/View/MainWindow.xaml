@@ -3,13 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:Capturer.Converters"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
         Height="600"
         Width="800"
         Title="Capturer"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
-    
+
+    <Window.Resources>
+        <converters:StringToIntConverter x:Key="StringToIntConverter" />
+    </Window.Resources>
     
     <Grid x:Name="mainGrid" Background="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}">
         <Grid.ColumnDefinitions>
@@ -20,8 +24,8 @@
 
        
         <StackPanel Grid.Column="0" Orientation="Vertical">
-            <Button Content="Podgląd" HorizontalAlignment="Stretch" />
-            <Button Content="Opcje" HorizontalAlignment="Stretch" />
+            <Button Padding="0,10,0,10" Content="Podgląd" HorizontalAlignment="Stretch" />
+            <Button Padding="0,10,0,10" Content="Opcje" HorizontalAlignment="Stretch" />
         </StackPanel>
 
         <Border Grid.Column="1" BorderThickness="0.7" Margin="1,5,0,5" BorderBrush="Black" />
@@ -31,7 +35,17 @@
                 <RowDefinition Height="40*" />
                 <RowDefinition Height="60*" />
             </Grid.RowDefinitions>
-            <ListBox Grid.Row="0" Margin="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+          <DataGrid Grid.Row="0" Margin="5" AutoGenerateColumns="False" ItemsSource="{Binding Tasks}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <DataGrid.Columns>
+              <DataGridTextColumn Binding="{Binding name}" ClipboardContentBinding="{x:Null}" Header="Nazwa"/>
+              <DataGridTextColumn Binding="{Binding type}" ClipboardContentBinding="{x:Null}" Header="Typ"/>
+              <DataGridTextColumn Binding="{Binding _sourceIP}" ClipboardContentBinding="{x:Null}" Header="IP"/>
+              <DataGridTextColumn Binding="{Binding days}" ClipboardContentBinding="{x:Null}" Header="Archiwum"/>
+              <DataGridTextColumn Binding="{Binding _destinationPath}" ClipboardContentBinding="{x:Null}" Header="Ścieżka"/>
+            </DataGrid.Columns>
+      </DataGrid>
+            
+          
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="50*" />
@@ -46,20 +60,30 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Margin="5" Grid.Column="0" Text="Typ strumienia:" />
-                            <ComboBox Margin="5" Grid.Column="1" HorizontalAlignment="Left" Width="auto" SelectedIndex="0">
+                            <ComboBox SelectedIndex="{Binding Type, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="5" Grid.Column="1" HorizontalAlignment="Left" Width="auto">
+                                <!---->
                                 <ComboBoxItem Content="UDP" />
                                 <ComboBoxItem Content="RTSP" />
                                 <ComboBoxItem Content="Capture and Decode" />
                             </ComboBox>
                         </Grid>
-
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Margin="5" Text="Nazwa:" />
+                            <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5"/>
+                        </Grid>
+                       
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Margin="5" Text="source IP:" />
-                            <TextBox Grid.Column="1" HorizontalAlignment="Stretch" Margin="5"/>
+                            <TextBox Text="{Binding IP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5"/>
                         </Grid>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -68,8 +92,8 @@
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Margin="5" Text="Destination:" />
-                            <TextBox Grid.Column="1" HorizontalAlignment="Stretch" Margin="5"/>
-                            <Button Content="..." Padding="5,0,5,0" Margin="0,5,0,5" Grid.Column="2" />
+                            <TextBox Text="{Binding DestPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5"/>
+                            <Button Command="{Binding BrowseCommand}"  Content="..." Padding="5,0,5,0" Margin="0,5,0,5" Grid.Column="2" />
                         </Grid>
 
                         <Grid>
@@ -78,11 +102,10 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Margin="5" Text="Usuwaj starsze niż (dni):" />
-                            <TextBox Grid.Column="1" HorizontalAlignment="Left" Width="40" Margin="5"/>
+                            <TextBox Grid.Column="1" Text="{Binding Days, Mode=TwoWay, Converter={StaticResource StringToIntConverter}, UpdateSourceTrigger=PropertyChanged}"  HorizontalAlignment="Left" Width="40" Margin="5"/> <!--=""-->
                         </Grid>
 
                         <Grid>
-
                             <Button Command="{Binding NewCommand}" HorizontalAlignment="Right" Content="Dodaj" Padding="5,0,5,0" Margin="5"/>
                         </Grid>
 
